@@ -536,6 +536,7 @@ describe 'vas' do
                 sitenameoverride: 'foobar',
                 realm: 'realm2.example.com',
                 join_domain_controllers: ['dc1.example.com', 'dc2.example.com'],
+                keytab_path: '/etc/vasinst.key',
               },
             )
           end
@@ -544,6 +545,15 @@ describe 'vas' do
             # rubocop:disable Layout/LineLength
             is_expected.to contain_exec('vasinst').with_command('/opt/bin/vastool -u joinuser -k /etc/vasinst.key -d3 join -f  -c ou=mycomputers,dc=example,dc=com -u OU=unix,DC=example,DC=com;OU=unix,DC=sub,DC=example,DC=com -g OU=unix,DC=example,DC=com;OU=unix,DC=sub,DC=example,DC=com  -n foo.example.com -s foobar realm2.example.com dc1.example.com dc2.example.com > /var/tmp/vasjoin.log 2>&1 && touch /etc/opt/quest/vas/puppet_joined')
             # rubocop:enable Layout/LineLength
+          }
+
+          it {
+            is_expected.to contain_exec('remove_vasinst_key').with(
+              'command' => '/bin/rm -f /etc/vasinst.key',
+              'onlyif'  => '/usr/bin/test -f /etc/vasinst.key && /usr/bin/test -f /etc/opt/quest/vas/puppet_joined',
+              'path'    => ['/bin', '/usr/bin'],
+              'require' => 'Exec[vasinst]',
+            )
           }
         end
 
