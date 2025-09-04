@@ -537,6 +537,7 @@ describe 'vas' do
                 realm: 'realm2.example.com',
                 join_domain_controllers: ['dc1.example.com', 'dc2.example.com'],
                 keytab_path: '/etc/vasinst.key',
+                remove_vasinst_keytab: true,
               },
             )
           end
