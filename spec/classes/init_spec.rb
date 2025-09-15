@@ -547,6 +547,26 @@ describe 'vas' do
           }
         end
 
+        context 'with remove_vasinst_keytab set to true' do
+          let(:params) do
+            required_params.merge(
+              {
+                keytab_path: '/etc/vasinst.key',
+                remove_vasinst_keytab: true,
+              },
+            )
+          end
+
+          it {
+            is_expected.to contain_exec('remove_vasinst_key').with(
+              'command' => '/bin/rm -f /etc/vasinst.key',
+              'onlyif'  => '/usr/bin/test -f /etc/vasinst.key && /usr/bin/test -f /etc/opt/quest/vas/puppet_joined',
+              'path'    => ['/bin', '/usr/bin'],
+              'require' => 'Exec[vasinst]',
+            )
+          }
+        end
+
         context 'with UPM configuration' do
           let(:params) do
             required_params.merge(

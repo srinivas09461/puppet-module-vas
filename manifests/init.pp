@@ -483,6 +483,8 @@
 #
 # @param api_config
 #   API configuration
+# @param remove_vasinst_keytab
+#   This parameter defines an execution resource responsible for removing the vasinst key
 class vas (
   Boolean $manage_nis                                                     = true,
   Boolean $manage_pam                                                     = true,
@@ -605,6 +607,7 @@ class vas (
   Optional[Stdlib::HTTPSUrl] $api_users_allow_url                         = undef,
   Optional[String[1]] $api_token                                          = undef,
   Boolean $api_ssl_verify                                                 = false,
+  Boolean $remove_vasinst_keytab                                          = false,
 ) {
   # variable preparations
   $once_file = '/etc/opt/quest/vas/puppet_joined'
@@ -1014,6 +1017,15 @@ class vas (
         ensure => link,
         path   => $symlink_vastool_binary_target,
         target => $vastool_binary,
+      }
+    }
+
+    if $remove_vasinst_keytab == true {
+      exec { 'remove_vasinst_key':
+        command => "/bin/rm -f ${keytab_path}",
+        onlyif  => "/usr/bin/test -f ${keytab_path} && /usr/bin/test -f ${once_file}",
+        path    => ['/bin', '/usr/bin'],
+        require => Exec['vasinst'],
       }
     }
   }
