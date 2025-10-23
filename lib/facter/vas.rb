@@ -67,3 +67,10 @@ Facter.add('vasmajversion') do
     end
   end
 end
+
+# vasinst file
+Facter.add('vasinst_key_present') do
+  setcode do
+    File.exist?('/etc/vasinst.key') ? 'present' : 'absent'
+  end
+end
