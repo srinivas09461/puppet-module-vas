@@ -987,13 +987,15 @@ class vas (
       before  => [Service['vasd'], $require_yp_service],
     }
 
-    file { 'keytab':
-      ensure => 'file',
-      path   => $keytab_path,
-      source => $keytab_source,
-      owner  => $keytab_owner,
-      group  => $keytab_group,
-      mode   => $keytab_mode,
+    if $remove_vasinst_keytab == false {
+      file { 'keytab':
+        ensure => 'file',
+        path   => $keytab_path,
+        source => $keytab_source,
+        owner  => $keytab_owner,
+        group  => $keytab_group,
+        mode   => $keytab_mode,
+      }
     }
 
     service { 'vasd':
