@@ -988,7 +988,7 @@ class vas (
     }
 
     file { 'keytab':
-      ensure => $facts['vas_keytab_ensure'],
+      ensure => 'file',
       path   => $keytab_path,
       source => $keytab_source,
       owner  => $keytab_owner,
@@ -996,26 +996,19 @@ class vas (
       mode   => $keytab_mode,
     }
 
-    if $facts['vas_keytab_ensure'] == 'file' {
-      exec { 'vasinst':
-        command => "${vastool_binary} -u ${username} -k ${keytab_path} -d3 join -f ${workstation_exec} -c ${computers_ou} ${user_search_path_exec} ${group_search_path_exec} ${upm_search_path_exec} -n ${vas_fqdn} ${s_opts} ${realm} ${join_domain_controllers_real} > ${vasjoin_logfile} 2>&1 && touch ${once_file}", # lint:ignore:140chars
-        path    => '/sbin:/bin:/usr/bin:/opt/quest/bin',
-        timeout => 1800,
-        creates => $once_file,
-        before  => $vasinst_require,
-        require => [Package['vasclnt'], Package['vasgp'], File['keytab'], $require_yp_package],
-      }
+    service { 'vasd':
+      ensure  => 'running',
+      enable  => true,
+      require => Exec['vasinst'],
+    }
 
-      $vasd_require = $facts['vas_keytab_ensure'] == 'file' ? {
-        true  => Exec['vasinst'],    # If 'file', Exec is declared, so require it.
-        false => Package['vasclnt'], # If 'absent', Exec is NOT declared, so require a safe, defined resource.
-      }
-
-      service { 'vasd':
-        ensure  => 'running',
-        enable  => true,
-        require => $vasd_require, # Use the conditional variable
-      }
+    exec { 'vasinst':
+      command => "${vastool_binary} -u ${username} -k ${keytab_path} -d3 join -f ${workstation_exec} -c ${computers_ou} ${user_search_path_exec} ${group_search_path_exec} ${upm_search_path_exec} -n ${vas_fqdn} ${s_opts} ${realm} ${join_domain_controllers_real} > ${vasjoin_logfile} 2>&1 && touch ${once_file}", # lint:ignore:140chars
+      path    => '/sbin:/bin:/usr/bin:/opt/quest/bin',
+      timeout => 1800,
+      creates => $once_file,
+      before  => $vasinst_require,
+      require => [Package['vasclnt'], Package['vasgp'], File['keytab'], $require_yp_package],
     }
 
     # optionally create symlinks to vastool binary
@@ -1024,6 +1017,15 @@ class vas (
         ensure => link,
         path   => $symlink_vastool_binary_target,
         target => $vastool_binary,
+      }
+    }
+
+    if $remove_vasinst_keytab == true {
+      exec { 'remove_vasinst_key':
+        command => "/bin/rm -f ${keytab_path}",
+        onlyif  => "/usr/bin/test -f ${keytab_path} && /usr/bin/test -f ${once_file}",
+        path    => ['/bin', '/usr/bin'],
+        require => Exec['vasinst'],
       }
     }
   }
