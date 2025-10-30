@@ -72,6 +72,6 @@ end
 Facter.add('manage_vasinst_keytab') do
   setcode do
     once_file = '/etc/opt/quest/vas/puppet_joined'
-    !File.exist?(keytab_path)
+    !File.exist?(once_file)
   end
 end
