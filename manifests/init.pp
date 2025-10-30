@@ -996,7 +996,6 @@ class vas (
         owner   => $keytab_owner,
         group   => $keytab_group,
         mode    => $keytab_mode,
-        require => Exec['create_keytab_guard'],
       }
     }
 
