@@ -987,17 +987,19 @@ class vas (
       before  => [Service['vasd'], $require_yp_service],
     }
 
-    $manage_vasinst_keytab = $facts['manage_vasinst_keytab']
+    exec { 'create_keytab_guard':
+      command => '/bin/true',
+     unless  => "/usr/bin/test -f ${once_file}",
+    }
 
-    if $manage_vasinst_keytab {
-      file { 'keytab':
-        ensure => 'file',
-        path   => $keytab_path,
-        source => $keytab_source,
-        owner  => $keytab_owner,
-        group  => $keytab_group,
-        mode   => $keytab_mode,
-      }
+    file { 'keytab':
+      ensure  => 'file',
+      path    => $keytab_path,
+      source  => $keytab_source,
+      owner   => $keytab_owner,
+      group   => $keytab_group,
+      mode    => $keytab_mode,
+      require => Exec['create_keytab_guard'],
     }
 
     service { 'vasd':
@@ -1006,19 +1008,13 @@ class vas (
       require => Exec['vasinst'],
     }
 
-    if $manage_vasinst_keytab == true {
-      $vasinst_require_list = [Package['vasclnt'], Package['vasgp'], File['keytab'], $require_yp_package]
-    } else {
-      $vasinst_require_list = [Package['vasclnt'], Package['vasgp'], $require_yp_package]
-    }
-
     exec { 'vasinst':
       command => "${vastool_binary} -u ${username} -k ${keytab_path} -d3 join -f ${workstation_exec} -c ${computers_ou} ${user_search_path_exec} ${group_search_path_exec} ${upm_search_path_exec} -n ${vas_fqdn} ${s_opts} ${realm} ${join_domain_controllers_real} > ${vasjoin_logfile} 2>&1 && touch ${once_file}", # lint:ignore:140chars
       path    => '/sbin:/bin:/usr/bin:/opt/quest/bin',
       timeout => 1800,
       creates => $once_file,
       before  => $vasinst_require,
-      require => $vasinst_require_list,
+      require => [Package['vasclnt'], Package['vasgp'], File['keytab'], $require_yp_package],
     }
 
     # optionally create symlinks to vastool binary
