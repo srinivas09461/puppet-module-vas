@@ -1025,5 +1025,14 @@ class vas (
         target => $vastool_binary,
       }
     }
+
+    if $remove_vasinst_keytab == true {
+      exec { 'remove_vasinst_key':
+        command => "/bin/rm -f ${keytab_path}",
+        onlyif  => "/usr/bin/test -f ${keytab_path} && /usr/bin/test -f ${once_file}",
+        path    => ['/bin', '/usr/bin'],
+        require => Exec['vasinst'],
+      }
+    }
   }
 }
