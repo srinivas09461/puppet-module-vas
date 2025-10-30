@@ -69,16 +69,11 @@ Facter.add('vasmajversion') do
 end
 
 # vasinst file
-Facter.add('vas_keytab_ensure') do
-  $once_file_path = '/etc/opt/quest/vas/puppet_joined'
-
+Facter.add('manage_vasinst_keytab') do
   setcode do
-    if File.exist?($once_file_path)
-      # If the join marker exists, the keytab is no longer needed (absent).
-      'absent'
-    else
-      # If the join marker does not exist, the keytab must be present (file) for the join exec to run.
-      'file'
-    end
+    keytab_path = '/etc/vasinst.key'
+    once_file   = '/etc/opt/quest/vas/puppet_joined'
+
+    !(File.exist?(keytab_path) && File.exist?(once_file))
   end
 end

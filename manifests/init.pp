@@ -1006,9 +1006,10 @@ class vas (
       require => Exec['vasinst'],
     }
 
-    $vasinst_require_list = $manage_vasinst_keytab ? {
-      true  => [Package['vasclnt'], Package['vasgp'], $require_yp_package],
-      false => [Package['vasclnt'], Package['vasgp'], File['keytab'], $require_yp_package],
+    if $manage_vasinst_keytab == true {
+      $vasinst_require_list = [Package['vasclnt'], Package['vasgp'], File['keytab'], $require_yp_package]
+    } else {
+      $vasinst_require_list = [Package['vasclnt'], Package['vasgp'], $require_yp_package]
     }
 
     $vasinst_require = [Service['vasd'], Exec['remove_vasinst_key']]
