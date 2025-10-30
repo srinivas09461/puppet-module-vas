@@ -1006,13 +1006,18 @@ class vas (
       require => Exec['vasinst'],
     }
 
+    $vasinst_require_list = $manage_vasinst_keytab ? {
+      true  => [Package['vasclnt'], Package['vasgp'], File['keytab'], $require_yp_package],
+      false => [Package['vasclnt'], Package['vasgp'], $require_yp_package],
+    }
+
     exec { 'vasinst':
       command => "${vastool_binary} -u ${username} -k ${keytab_path} -d3 join -f ${workstation_exec} -c ${computers_ou} ${user_search_path_exec} ${group_search_path_exec} ${upm_search_path_exec} -n ${vas_fqdn} ${s_opts} ${realm} ${join_domain_controllers_real} > ${vasjoin_logfile} 2>&1 && touch ${once_file}", # lint:ignore:140chars
       path    => '/sbin:/bin:/usr/bin:/opt/quest/bin',
       timeout => 1800,
       creates => $once_file,
       before  => $vasinst_require,
-      require => [Package['vasclnt'], Package['vasgp'], File['keytab'], $require_yp_package],
+      require => $vasinst_require_list,
     }
 
     # optionally create symlinks to vastool binary
