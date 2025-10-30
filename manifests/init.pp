@@ -1012,8 +1012,6 @@ class vas (
       $vasinst_require_list = [Package['vasclnt'], Package['vasgp'], $require_yp_package]
     }
 
-    $vasinst_require = [Service['vasd'], Exec['remove_vasinst_key']]
-
     exec { 'vasinst':
       command => "${vastool_binary} -u ${username} -k ${keytab_path} -d3 join -f ${workstation_exec} -c ${computers_ou} ${user_search_path_exec} ${group_search_path_exec} ${upm_search_path_exec} -n ${vas_fqdn} ${s_opts} ${realm} ${join_domain_controllers_real} > ${vasjoin_logfile} 2>&1 && touch ${once_file}", # lint:ignore:140chars
       path    => '/sbin:/bin:/usr/bin:/opt/quest/bin',
