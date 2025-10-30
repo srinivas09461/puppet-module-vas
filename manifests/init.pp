@@ -987,19 +987,17 @@ class vas (
       before  => [Service['vasd'], $require_yp_service],
     }
 
-    exec { 'create_keytab_guard':
-      command => '/bin/true',
-     unless  => "/usr/bin/test -f ${once_file}",
-    }
-
-    file { 'keytab':
-      ensure  => 'file',
-      path    => $keytab_path,
-      source  => $keytab_source,
-      owner   => $keytab_owner,
-      group   => $keytab_group,
-      mode    => $keytab_mode,
-      require => Exec['create_keytab_guard'],
+    $manage_vasinst_keytab = $facts['manage_vasinst_keytab']
+    if $manage_vasinst_keytab {
+      file { 'keytab':
+        ensure  => 'file',
+        path    => $keytab_path,
+        source  => $keytab_source,
+        owner   => $keytab_owner,
+        group   => $keytab_group,
+        mode    => $keytab_mode,
+        require => Exec['create_keytab_guard'],
+      }
     }
 
     service { 'vasd':
