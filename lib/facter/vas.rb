@@ -73,6 +73,6 @@ Facter.add('manage_vasinst_keytab') do
   setcode do
     keytab_path = '/etc/vasinst.key'
 
-    !(File.exist?(keytab_path)
+    !File.exist?(keytab_path)
   end
 end
