@@ -1004,7 +1004,10 @@ class vas (
     service { 'vasd':
       ensure  => 'running',
       enable  => true,
-      require => Exec['vasinst'],
+      require => $remove_vasinst_keytab ? {
+        true  => undef,
+        false => Exec['vasinst'],
+      },
     }
 
     if $remove_vasinst_keytab == false {
