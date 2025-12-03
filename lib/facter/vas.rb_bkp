@@ -69,9 +69,8 @@ Facter.add('vasmajversion') do
 end
 
 # vasinst file
-Facter.add('manage_vasinst_keytab') do
+Facter.add('vasinst_key_present') do
   setcode do
-    once_file = '/etc/opt/quest/vas/puppet_joined'
-    !File.exist?(once_file)
+    File.exist?('/etc/vasinst.key') ? 'present' : 'absent'
   end
 end

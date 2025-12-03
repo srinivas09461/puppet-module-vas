@@ -987,27 +987,22 @@ class vas (
       before  => [Service['vasd'], $require_yp_service],
     }
 
-    $ensure_keytab = $remove_vasinst_keytab ? {
-      true  => 'absent',
-      false => 'file',
-    }
-
     file { 'keytab':
-      ensure => $ensure_keytab,
-      path   => $keytab_path,
-      source => $keytab_source,
-      owner  => $keytab_owner,
-      group  => $keytab_group,
-      mode   => $keytab_mode,
+       ensure => $remove_vasinst_keytab ? {
+         true  => 'absent',
+         false => 'file',
+       },
+       path   => $keytab_path,
+       source => $keytab_source,
+       owner  => $keytab_owner,
+       group  => $keytab_group,
+       mode   => $keytab_mode,
     }
 
     service { 'vasd':
       ensure  => 'running',
       enable  => true,
-      require => $remove_vasinst_keytab ? {
-        true  => undef,
-        false => Exec['vasinst'],
-      },
+      require => Exec['vasinst'],
     }
 
     if $remove_vasinst_keytab == false {
